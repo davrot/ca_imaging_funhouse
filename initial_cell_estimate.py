@@ -66,6 +66,7 @@ while int(master_mask.sum()) > 0:
             ).astype(dtype=np.float32)
         else:
             coords = contour.astype(dtype=np.float32)
+
         # Make a mask out of the polygon
         mask = skimage.draw.polygon2mask(scale.shape, coords)
         assert mask is not None
