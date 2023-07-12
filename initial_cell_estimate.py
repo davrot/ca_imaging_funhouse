@@ -5,7 +5,7 @@ import skimage
 
 filename: str = "example_data_crop"
 threshold: float = 0.8
-tolerance: float = 1.0
+tolerance: float | None = None
 minimum_area: int = 100
 
 torch_device: torch.device = torch.device(
@@ -60,9 +60,12 @@ while int(master_mask.sum()) > 0:
     # Find the coutours
     for contour in skimage.measure.find_contours(image, 0):
         # soften outline
-        coords = skimage.measure.approximate_polygon(
-            contour, tolerance=tolerance
-        ).astype(dtype=np.float32)
+        if tolerance is not None:
+            coords = skimage.measure.approximate_polygon(
+                contour, tolerance=tolerance
+            ).astype(dtype=np.float32)
+        else:
+            coords = contour.astype(dtype=np.float32)
         # Make a mask out of the polygon
         mask = skimage.draw.polygon2mask(scale.shape, coords)
         assert mask is not None
