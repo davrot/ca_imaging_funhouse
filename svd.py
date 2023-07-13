@@ -96,6 +96,7 @@ def filtfilt(
     output = ta.functional.filtfilt(
         process_data_padded.unsqueeze(0), butter_a, butter_b, clamp=False
     ).squeeze(0)
+
     output = output[..., padding_length:-padding_length].movedim(-1, 0)
     return output
 
@@ -124,7 +125,7 @@ def chunk_iterator(array: torch.Tensor, chunk_size: int):
 
 
 @torch.no_grad()
-def lowpass(
+def bandpass(
     data: torch.Tensor,
     device: torch.device,
     low_frequency: float = 0.1,
@@ -168,7 +169,7 @@ def temporal_filter(
         data.movedim(0, -1), orig_freq=orig_freq, new_freq=new_freq
     ).movedim(-1, 0)
 
-    data = lowpass(
+    data = bandpass(
         data,
         device=device,
         low_frequency=bp_low_frequency,
@@ -202,3 +203,39 @@ def svd_denoise(data: torch.Tensor, window_size: int) -> torch.Tensor:
                 to_remove_data = to_remove(data_sel, whiten_k, whiten_mean)
                 data_out[:, x, y] = to_remove_data[:, window_size, window_size]
     return data_out
+
+
+@torch.no_grad()
+def calculate_translation(
+    input: torch.Tensor,
+    reference_image: torch.Tensor,
+    image_alignment,
+    start_position_coefficients: int = 0,
+    batch_size: int = 100,
+) -> torch.Tensor:
+    tvec = torch.zeros((input.shape[0], 2))
+
+    data_loader = torch.utils.data.DataLoader(
+        torch.utils.data.TensorDataset(input[start_position_coefficients:, ...]),
+        batch_size=batch_size,
+        shuffle=False,
+    )
+    start_position: int = 0
+    for input_batch in data_loader:
+        assert len(input_batch) == 1
+
+        end_position = start_position + input_batch[0].shape[0]
+
+        tvec_temp = image_alignment.dry_run_translation(
+            input=input_batch[0],
+            new_reference_image=reference_image,
+        )
+
+        assert tvec_temp is not None
+
+        tvec[start_position:end_position, :] = tvec_temp
+
+        start_position += input_batch[0].shape[0]
+
+    tvec = torch.round(tvec)
+    return tvec
