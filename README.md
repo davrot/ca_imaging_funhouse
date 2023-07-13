@@ -58,7 +58,13 @@ For installing torch under Windows see here: https://pytorch.org/get-started/loc
 - scale data_svd (-> to_remove) and remove it from data (data -= to_remove)
 - the movie is downsamples in time
   - torchaudio.functional.resample from 30fps to 3 fps
-  - bandpass filter 0.1 - 1.0 Hz
+  - bandpass filter 0.1 - 1.0 Hz (based on torchaudio's filtfilt)
 - SVD Denosing
+  - A windows is moved over the spatial dimensions. The window has the size (2*window_size+1) x (2*window_size+1) with window_size=2
+  - A SVD is calculated over each individual window.
+  - Calculate whitening matrices and co from it.
+  - Whiten the movie patch and average over the spatial dimensions. -> data_svd
+  - Calculate scaling factor between data_svd and data for all the individual pixels.
+  - Use the time series in the center of the window as denoised signal.
 - torch.nn.AvgPool2d
 - save as ..._decorrelated.npy
