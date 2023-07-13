@@ -90,6 +90,15 @@ For installing torch under Windows see here: https://pytorch.org/get-started/loc
     - Does this contour cover an area larger than the minimum area (parameter)? yes store this contour and remove this area from the mask otherwise discard this contour
   - Was a suitable contour found for (x0,y0)? No: remove pixel from the mask
 - save the contours
-  
+
+## inspection.py
+- load the ..._decorrelated.npy file into data
+- load the contours
+- loop over the contors
+  - mask = skimage.draw.polygon2mask(scale.shape, coords)
+  - Extract a list of pixel from the mask
+  - Use this list of pixel to select data from the tensor matrix
+  - Use a SVD to extract the common time series from these pixels
+- calculate the skew (scipy.stats.skew) of these time series and sort them acordingly
  
  
