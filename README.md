@@ -26,6 +26,8 @@ Uses the estimated cell areas and trys to extract a common signal from each area
 
 The movement jitter surpression does not work correctly. During programming it wasn't clear what could move or not in the image. Also what are stable landmarks? In the moment, the software is too much focused on the aperture. 
 
+skimage.measure.find_contours, skimage.measure.approximate_polygon, and skimage.draw.polygon2mask should be ported to PyTorch. However, the estimated performance increase will be very minor. 
+
 # Installation 
 
 The code was tested on a Python 3.11.2 (Linux) with the following pip packages installed:
