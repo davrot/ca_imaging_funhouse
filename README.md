@@ -14,8 +14,8 @@ Visual inspection of the movie stored in ..._decorrelated.npy. The two show file
 
 Estimates where cells (or better areas with correlated activites are). 
 
-threshold: float = 0.8 # Correlation threshold. results in the area per detected cell. The smaller the value, the bigger the area.
-minimum_area: int = 100 # We don't want a huge amount of mini "cells", this we have a threshold for the area a cell needs to occupy. 
+- threshold: float = 0.8 # Correlation threshold. results in the area per detected cell. The smaller the value, the bigger the area.
+- minimum_area: int = 100 # We don't want a huge amount of mini "cells", this we have a threshold for the area a cell needs to occupy. 
 
 ## inspection.py
 
