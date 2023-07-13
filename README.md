@@ -39,3 +39,26 @@ Not all packages are necessary (probably these are enougth: torch torchaudio tor
 We used a RTX 3090 as test GPU.
 
 For installing torch under Windows see here: https://pytorch.org/get-started/locally/
+
+# Processing pipeline:
+
+## run_svd.py
+- convert avi file to npy file
+- load npy file into RAM (np.ndarray: input)
+- copy to the GPU (input -> torch.Tensor: data)
+- do some pre-processing for helping to find landmarks in the movie [needs improvement!]
+- select a reference image
+- calculate translation changes between the reference image and the frames of the movie
+- copy to the GPU (input -> torch.Tensor: data)
+- apply spatial shift to compensate for movement between reference image and the frames
+- calculate a SVD over the whole movie. Calculate whitening matrices and co from it.
+- whiten the movie and average over the spatial dimensions -> data_svd
+- copy to the GPU (input -> torch.Tensor: data)
+- calculate scaling factor between data_svd and data for all the individual pixels.
+- scale data_svd (-> to_remove) and remove it from data (data -= to_remove)
+- the movie is downsamples in time
+  - torchaudio.functional.resample from 30fps to 3 fps
+  - bandpass filter 0.1 - 1.0 Hz
+- SVD Denosing
+- torch.nn.AvgPool2d
+- save as ..._decorrelated.npy
