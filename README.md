@@ -68,3 +68,28 @@ For installing torch under Windows see here: https://pytorch.org/get-started/loc
   - Use the time series in the center of the window as denoised signal.
 - torch.nn.AvgPool2d
 - save as ..._decorrelated.npy
+
+## initial_cell_estimate.py
+- load the ..._decorrelated.npy file into data
+- data = data.nan_to_num(nan=0.0) 
+- data -= data.mean(dim=0, keepdim=True)
+- data /= data.std(dim=0, keepdim=True)
+- master_image = (data.max(dim=0)[0] - data.min(dim=0)[0]).nan_to_num(nan=0.0).clone()
+- temp_image = master_image.clone()
+- an empty mask is created -> master_mask
+- while-loop: Are there are pixels unexplained in the mask master_mask left? 
+  - Select a pixel (x0,y0) via maximum on temp_image; (Also stop if there is no "real" maximum anymore; i.e. x0,y0 is on an already used pixel)   
+  - Using this selected pixel (x0,y0), the correlation between time series at (x0,y0) and the whole movie is calculated.
+  - Remove the correlation with the mask which knows which pixel were already used. temp_image *= master_mask
+  - Use a threshold (parameter) on the correlation matrix. Thus we create a binary matrix which is one where the correlation is bigger the threshold.
+  - skimage.measure.find_contours on the correlation matrix
+    - With each contour:
+    - [optional: skimage.measure.approximate_polygon]
+    - mask = skimage.draw.polygon2mask(scale.shape, coords)
+    - Is (x0,y0) inside this contour -> yes continue otherwise discard this contour.
+    - Does this contour cover an area larger than the minimum area (parameter)? yes store this contour and remove this area from the mask otherwise discard this contour
+  - Was a suitable contour found for (x0,y0)? No: remove pixel from the mask
+- save the contours
+  
+ 
+ 
