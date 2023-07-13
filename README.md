@@ -1,6 +1,6 @@
 # ca_imaging_funhouse
 
-Proof of concept source code for pre-processing calcuim imaging movies. 
+Proof of concept source code for pre-processing calcuim imaging movies. (It works on test data. However, improvements need to be implemented)
 
 ## run_svd.py
 
