@@ -82,6 +82,17 @@ if __name__ == "__main__":
 
         print("Calculate to_remove")
         data = torch.tensor(input, device=torch_device)
+        
+        for id in range(0, data.shape[0]):
+            data[id, ...] = tv.transforms.functional.affine(
+                img=data[id, ...].unsqueeze(0),
+                angle=0,
+                translate=[tvec[id, 1], tvec[id, 0]],
+                scale=1.0,
+                shear=0,
+                fill=fill_value,
+            ).squeeze(0)
+            
         to_remove_data = to_remove(data, whiten_k, whiten_mean)
 
         data -= to_remove_data
