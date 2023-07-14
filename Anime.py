@@ -54,10 +54,7 @@ class Anime:
         if mask_np is not None:
             image[mask_np] = float("NaN")
         image_handle = plt.imshow(
-            image,
-            cmap=cmap,
-            vmin=vmin,
-            vmax=vmax,
+            image, cmap=cmap, vmin=vmin, vmax=vmax, interpolation="nearest"
         )
 
         if colorbar:

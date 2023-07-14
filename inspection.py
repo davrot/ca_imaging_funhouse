@@ -6,6 +6,9 @@ from scipy.stats import skew
 
 filename: str = "example_data_crop"
 use_svd: bool = True
+show_movie: bool = True
+
+from Anime import Anime
 
 torch_device: torch.device = torch.device(
     "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -64,6 +67,26 @@ for id in range(0, stored_contours.shape[0]):
         ) / mask.sum()
         to_plot[:, id] = ts
 
+with torch.no_grad():
+    if show_movie:
+        print("Calculate movie")
+        # Clean tensor
+        data *= 0.0
+        for id in range(0, stored_contours.shape[0]):
+            mask = torch.tensor(
+                skimage.draw.polygon2mask(
+                    (int(data.shape[1]), int(data.shape[2])), stored_contours[id]
+                ),
+                device=torch_device,
+                dtype=torch.float32,
+            )
+            # * 1.0 - mask: otherwise the overlapping outlines look bad
+            # Yes... reshape and indices would be faster...
+            data *= 1.0 - mask.unsqueeze(0)
+            data += mask.unsqueeze(0) * to_plot[:, id].unsqueeze(1).unsqueeze(2)
+
+        ani = Anime()
+        ani.show(data)
 
 skew_value = skew(to_plot.cpu().numpy(), axis=0)
 skew_idx = np.flip(skew_value.argsort())

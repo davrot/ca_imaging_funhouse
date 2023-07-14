@@ -5,7 +5,7 @@ import numpy as np
 from tqdm import trange
 
 
-def convert_avi_to_npy(filename: str) -> None:
+def convert_avi_to_npy(filename: str) -> np.ndarray:
     capture_from_file = cv2.VideoCapture(filename + str(".avi"))
     avi_length = int(capture_from_file.get(cv2.CAP_PROP_FRAME_COUNT))
 
@@ -26,12 +26,13 @@ def convert_avi_to_npy(filename: str) -> None:
     assert data is not None
     np.save(filename + str(".npy"), data)
 
+    return data
+
 
 @torch.no_grad()
 def to_remove(
     data: torch.Tensor, whiten_k: torch.Tensor, whiten_mean: torch.Tensor
 ) -> torch.Tensor:
-    whiten_mean = whiten_mean
     whiten_k = whiten_k[:, :, 0]
 
     data = (data - whiten_mean.unsqueeze(0)) * whiten_k.unsqueeze(0)

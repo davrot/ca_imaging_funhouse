@@ -3,6 +3,7 @@ import torch
 import matplotlib.pyplot as plt
 import skimage
 
+
 filename: str = "example_data_crop"
 threshold: float = 0.8
 tolerance: float | None = None
@@ -18,15 +19,22 @@ data = torch.tensor(input, device=torch_device)
 del input
 print("loading done")
 
+
 data = data.nan_to_num(nan=0.0)
 data -= data.mean(dim=0, keepdim=True)
+
+# master_image = data.std(dim=0).nan_to_num(nan=0.0).clone()
+
 data /= data.std(dim=0, keepdim=True)
+
 
 master_image = (data.max(dim=0)[0] - data.min(dim=0)[0]).nan_to_num(nan=0.0).clone()
 temp_image = master_image.clone()
 master_mask = torch.ones_like(temp_image)
 
 stored_contours: list = []
+perimenter: list = []
+area: list = []
 counter: int = 0
 contours_found: int = 0
 while int(master_mask.sum()) > 0:
@@ -74,10 +82,13 @@ while int(master_mask.sum()) > 0:
         # check if this is the contour in which the original point was
         if mask[x, y]:
             found_something = True
-
-            if mask.sum() > minimum_area:
+            mask_sum = mask.sum()
+            if mask_sum > minimum_area:
+                perimenter.append(skimage.measure.perimeter(mask))
+                area.append(mask_sum)
                 stored_contours.append(coords)
                 contours_found += 1
+
             idx_set_mask = torch.where(torch.tensor(mask, device=torch_device) > 0)
 
             master_mask[idx_set_mask] = 0.0
@@ -87,6 +98,14 @@ while int(master_mask.sum()) > 0:
         master_mask[x, y] = 0.0
 print("-==- DONE -==-")
 np.save("cells.npy", np.array(stored_contours, dtype=object))
+np.save("perimenter.npy", np.array(perimenter, dtype=object))
+np.save("area.npy", np.array(area, dtype=object))
+
+print()
+for i in range(0, len(stored_contours)):
+    print(
+        f"ID:{i} area:{area[i]:.3e} perimenter:{perimenter[i]:.3e} ration:{area[i] / perimenter[i]:.3e}"
+    )
 
 plt.imshow(master_image.cpu(), cmap="hot")
 for i in range(0, len(stored_contours)):
